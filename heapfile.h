@@ -24,7 +24,7 @@ enum Operator { LT, LTE, EQ, GTE, GT, NE };  // scan operators
 
 struct FileHdrPage
 {
-  char		fileName[MAXNAMESIZE];   // name of file
+  char  fileName[MAXNAMESIZE];   // name of file
   int		firstPage;	// pageNo of first data page in file
   int		lastPage;	// pageNo of last data page in file
   int		pageCnt;	// number of pages
