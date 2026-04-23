@@ -27,7 +27,7 @@ const Status createHeapFile(const string fileName)
         status = db.openFile(fileName, file);
         if (status != OK) return status;
 
-		status = bufMgr->allocPage(file, hdrPageNo, newPage);
+		status = bufMgr->allocPage(file, hdrPageNo, (newPage));
         if (status != OK) return status;
 
         hdrPage = (FileHdrPage*) newPage;
@@ -40,6 +40,9 @@ const Status createHeapFile(const string fileName)
 
         status = bufMgr->allocPage(file, newPageNo, newPage);
         if (status != OK) return status;
+
+        newPage->init(newPageNo);
+
         hdrPage->firstPage = newPageNo;
         hdrPage->lastPage = newPageNo;
 
