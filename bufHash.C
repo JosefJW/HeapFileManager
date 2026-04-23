@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <stdio.h>
+#include <cstdint>
 #include "page.h"
 #include "buf.h"
 
