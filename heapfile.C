@@ -89,7 +89,7 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
             return;
         }
 		
-		curDirtyFlag = false
+		curDirtyFlag = false;
         curRec = NULLRID;
 		
 		returnStatus = OK;
@@ -196,8 +196,8 @@ const Status HeapFileScan::startScan(const int offset_,
     
     if ((offset_ < 0 || length_ < 1) ||
         (type_ != STRING && type_ != INTEGER && type_ != FLOAT) ||
-        (type_ == INTEGER && length_ != sizeof(int)
-         || type_ == FLOAT && length_ != sizeof(float)) ||
+        ((type_ == INTEGER && length_ != sizeof(int))
+         || (type_ == FLOAT && length_ != sizeof(float))) ||
         (op_ != LT && op_ != LTE && op_ != EQ && op_ != GTE && op_ != GT && op_ != NE))
     {
         return BADSCANPARM;
@@ -285,15 +285,15 @@ const Status HeapFileScan::scanNext(RID& outRid)
     while (true)
     {
         if (curRec.pageNo == -1) {
-            status = ((HeapPage*)curPage)->firstRecord(nextRid);
+            status = curPage->firstRecord(nextRid);
         } else {
-            status = ((HeapPage*)curPage)->nextRecord(curRec, nextRid);
+            status = curPage->nextRecord(curRec, nextRid);
         }
 
         if (status == OK) 
         {
             curRec = nextRid; 
-            status = ((HeapPage*)curPage)->getRecord(curRec, rec);
+            status = curPage->getRecord(curRec, rec);
             if (status != OK) return status;
 
             if (matchRec(rec))
@@ -305,7 +305,7 @@ const Status HeapFileScan::scanNext(RID& outRid)
         else // End of current page
         {
             int nextPageNo;
-            ((HeapPage*)curPage)->getNextPage(nextPageNo);
+            curPage->getNextPage(nextPageNo);
 
             if (nextPageNo == -1) return FILEEOF;
 
@@ -453,7 +453,7 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         curDirtyFlag = false;
     }
 
-    status = ((HeapPage*)curPage)->insertRecord(rec, outRid);
+    status = curPage->insertRecord(rec, outRid);
 
     if (status == NOSPACE)
     {
@@ -462,10 +462,10 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         if (status != OK) return status;
 
         // Initialize the new page as a HeapPage
-        ((HeapPage*)newPage)->init(newPageNo);
+        newPage->init(newPageNo);
         
         // Link the old last page to this new page
-        ((HeapPage*)curPage)->setNextPage(newPageNo);
+        curPage->setNextPage(newPageNo);
         
         // Mark the old page as dirty
         curDirtyFlag = true; 
@@ -481,7 +481,7 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         hdrDirtyFlag = true;
 
         // Insert the record into the brand new page
-        status = ((HeapPage*)curPage)->insertRecord(rec, outRid);
+        status = curPage->insertRecord(rec, outRid);
         if (status != OK) return status;
     }
 
