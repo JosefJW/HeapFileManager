@@ -27,7 +27,7 @@ const Status createHeapFile(const string fileName)
         status = db.openFile(fileName, file);
         if (status != OK) return status;
 
-		status = bufMgr->allocPage(file, hdrPageNo, (newPage));
+		status = bufMgr->allocPage(file, hdrPageNo, newPage);
         if (status != OK) return status;
 
         hdrPage = (FileHdrPage*) newPage;
@@ -52,6 +52,7 @@ const Status createHeapFile(const string fileName)
         status = bufMgr->unPinPage(file, newPageNo, 1);
         if (status != OK) return status;
 
+        db.closeFile(file);
 		return (OK);
     }
 
