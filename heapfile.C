@@ -80,6 +80,7 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
 
     status = bufMgr->readPage(filePtr, headerPageNo, pagePtr);
     if (status != OK) {
+        cout << "CRITICAL: readPage failed with status " << status << endl;
         returnStatus = status;
         return;
     }
