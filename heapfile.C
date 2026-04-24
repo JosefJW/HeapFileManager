@@ -68,6 +68,7 @@ const Status createHeapFile(const string fileName)
             cout << "hdrPage->firstPage: " << hdrPage->firstPage << endl;
             cout << "hdrPage->lastPage: " << hdrPage->lastPage << endl;
             cout << "hdrPage->pageCnt: " << hdrPage->pageCnt << endl;
+            cout << "hdrPageNo: " << hdrPageNo << endl;
         } else {
             cout << "CRITICAL: hdrPage is NULL before unpinning!" << endl;
         }
