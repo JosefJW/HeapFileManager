@@ -110,10 +110,36 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
     returnStatus = OK;
 }
 
-// routine to destroy a heapfile
-const Status destroyHeapFile(const string fileName)
+// the destructor closes the file
+HeapFile::~HeapFile()
 {
-	return (db.destroyFile (fileName));
+    Status status;
+    cout << "invoking heapfile destructor on file " << headerPage->fileName << endl;
+
+    // see if there is a pinned data page. If so, unpin it 
+    if (curPage != NULL)
+    {
+    	status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+		curPage = NULL;
+		curPageNo = 0;
+		curDirtyFlag = false;
+		if (status != OK) cerr << "error in unpin of date page\n";
+    }
+	
+	 // unpin the header page
+    status = bufMgr->unPinPage(filePtr, headerPageNo, hdrDirtyFlag);
+    if (status != OK) cerr << "error in unpin of header page\n";
+	
+	// status = bufMgr->flushFile(filePtr);  // make sure all pages of the file are flushed to disk
+	// if (status != OK) cerr << "error in flushFile call\n";
+	// before close the file
+	status = db.closeFile(filePtr);
+    if (status != OK)
+    {
+		cerr << "error in closefile call\n";
+		Error e;
+		e.print (status);
+    }
 }
 
 // Return number of records in heap file
