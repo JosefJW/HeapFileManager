@@ -61,6 +61,17 @@ const Status createHeapFile(const string fileName)
         db.closeFile(file);
 
         cout << "createHeapFile: ALL GOOD; EXITING." << endl;
+        cout << "--- createHeapFile Debug ---" << endl;
+        cout << "headerPage pointer: " << (void*)hdrPage << endl;
+        if (hdrPage != NULL) {
+            cout << "hdrPage->fileName: " << hdrPage->fileName << endl;
+            cout << "hdrPage->firstPage: " << hdrPage->firstPage << endl;
+            cout << "hdrPage->lastPage: " << hdrPage->lastPage << endl;
+            cout << "hdrPage->pageCnt: " << hdrPage->pageCnt << endl;
+        } else {
+            cout << "CRITICAL: hdrPage is NULL before unpinning!" << endl;
+        }
+        cout << "----------------------------" << endl;
 		return (OK);
     }
 
