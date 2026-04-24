@@ -94,7 +94,7 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
             returnStatus = status;
             return;
         }
-        curPage = (HeapPage*) pagePtr;
+        curPage = pagePtr;
         curDirtyFlag = false;
     } else {
         curPage = NULL;
