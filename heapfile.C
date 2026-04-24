@@ -92,7 +92,7 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
     Status  status;
     Page* pagePtr;
 
-    headerPageNo = 0;
+    headerPageNo = 1;
 
     if ((status = db.openFile(fileName, filePtr)) != OK) {
         returnStatus = status;
