@@ -47,10 +47,16 @@ const Status createHeapFile(const string fileName)
         hdrPage->lastPage = newPageNo;
 
         status = bufMgr->unPinPage(file, hdrPageNo, 1);
-        if (status != OK) return status;
+        if (status != OK) {
+            cout << "createHeapFile: Failed to unpin Header! Error: " << status << endl;
+            return status;
+        }
 
         status = bufMgr->unPinPage(file, newPageNo, 1);
-        if (status != OK) return status;
+        if (status != OK) {
+            cout << "createHeapFile: Failed to unpin Header! Error: " << status << endl;
+            return status;
+        }
 
         db.closeFile(file);
 		return (OK);
