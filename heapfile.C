@@ -59,6 +59,8 @@ const Status createHeapFile(const string fileName)
         }
 
         db.closeFile(file);
+
+        cout << "createHeapFile: ALL GOOD; EXITING." << endl;
 		return (OK);
     }
 
