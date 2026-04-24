@@ -68,41 +68,41 @@ const Status destroyHeapFile(const string fileName)
 // constructor opens the underlying file
 HeapFile::HeapFile(const string & fileName, Status& returnStatus)
 {
-    Status 	status;
-    Page*	pagePtr;
+    Status  status;
+    Page* pagePtr;
 
-    cout << "opening file " << fileName << endl;
+    headerPageNo = 0;
 
-    // open the file and read in the header page and the first data page
-    if ((status = db.openFile(fileName, filePtr)) == OK)
-    {
-		status = bufMgr->readPage(filePtr, 0, pagePtr);
+    if ((status = db.openFile(fileName, filePtr)) != OK) {
+        returnStatus = status;
+        return;
+    }
+
+    status = bufMgr->readPage(filePtr, headerPageNo, pagePtr);
+    if (status != OK) {
+        returnStatus = status;
+        return;
+    }
+    headerPage = (FileHdrPage*) pagePtr;
+    hdrDirtyFlag = false;
+
+    curPageNo = headerPage->firstPage;
+    
+    if (curPageNo != -1) {
+        status = bufMgr->readPage(filePtr, curPageNo, pagePtr);
         if (status != OK) {
             returnStatus = status;
             return;
         }
-
-        headerPage = (FileHdrPage*) pagePtr;
-        hdrDirtyFlag = false;
-
-        curPageNo = headerPage->firstPage;
-        status = bufMgr->readPage(filePtr, curPageNo, curPage);
-        if (status != OK) {
-            returnStatus = status;
-            return;
-        }
-		
-		curDirtyFlag = false;
-        curRec = NULLRID;
-		
-		returnStatus = OK;
+        curPage = (HeapPage*) pagePtr;
+        curDirtyFlag = false;
+    } else {
+        curPage = NULL;
+        curDirtyFlag = false;
     }
-    else
-    {
-    	cerr << "open of heap file failed\n";
-		returnStatus = status;
-		return;
-    }
+
+    curRec = NULLRID;
+    returnStatus = OK;
 }
 
 // the destructor closes the file
