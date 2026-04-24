@@ -441,8 +441,7 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
 {
     Page*	newPage;
     int		newPageNo;
-    Status	status, unpinstatus;
-    RID		rid;
+    Status	status;
 
     // check for very large records
     if ((unsigned int) rec.length > PAGESIZE-DPFIXED)
