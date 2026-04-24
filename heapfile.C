@@ -76,7 +76,7 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
     // open the file and read in the header page and the first data page
     if ((status = db.openFile(fileName, filePtr)) == OK)
     {
-		status = bufMgr->readPage(filePtr, headerPageNo, pagePtr);
+		status = bufMgr->readPage(filePtr, 0, pagePtr);
         if (status != OK) {
             returnStatus = status;
             return;
