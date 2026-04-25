@@ -506,6 +506,9 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         status = bufMgr->allocPage(filePtr, newPageNo, newPage);
         if (status != OK) return status;
 
+        // DEBUG
+        cout << "[DEBUG 2] Page " << curPageNo << " full. Allocating " << newPageNo << endl;
+
         // Initialize the new page as a HeapPage
         newPage->init(newPageNo);
         
