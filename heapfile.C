@@ -14,6 +14,7 @@ const Status createHeapFile(const string fileName)
 {
     File* 		file;
     Status 		status;
+    Page* newHdrPage;
     FileHdrPage*	hdrPage;
     int			hdrPageNo;
     int			newPageNo;
@@ -30,9 +31,10 @@ const Status createHeapFile(const string fileName)
         if (status != OK) return status;
 
         // Initialize the header page
-		status = bufMgr->allocPage(file, hdrPageNo, newPage);
+		status = bufMgr->allocPage(file, hdrPageNo, newHdrPage);
         if (status != OK) return status;
-        hdrPage = (FileHdrPage*) newPage;
+        newHdrPage->init(hdrPageNo);
+        hdrPage = (FileHdrPage*) newHdrPage;
         memset(hdrPage->fileName, 0, MAXNAMESIZE); // Ensure hdrPage->fileName is blank
         strncpy(hdrPage->fileName, fileName.c_str(), MAXNAMESIZE-1); // Fill in fileName
         hdrPage->pageCnt = 0;
@@ -180,11 +182,7 @@ const Status HeapFile::getRecord(const RID & rid, Record & rec)
 
         // Read in the correct page
         status = bufMgr->readPage(filePtr, rid.pageNo, curPage);
-        if (status != OK) {
-            curPage = NULL;
-            curPageNo = -1;
-            return status;
-        }
+        if (status != OK) return status;
         curPageNo = rid.pageNo;
         curDirtyFlag = false;
     }
