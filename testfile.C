@@ -797,7 +797,7 @@ int main(int argc, char **argv)
     delete file1;
     destroyHeapFile("leak.01");
     cout << "Passed getRecord leak test." << endl;
-    */
+    
 
 
     
@@ -815,14 +815,14 @@ int main(int argc, char **argv)
     for(i = 0; i < 150; i++) {
         scan1 = new HeapFileScan("leak.02", status);
         scan1->startScan(0, 0, STRING, NULL, EQ);
-        while(scan1->scanNext(newRid) != FILEEOF) { /* just consume */ }
+        while(scan1->scanNext(newRid) != FILEEOF) { /* just consume *\/ }
         delete scan1; // Destructor should clean up.
     }
     destroyHeapFile("leak.02");
     cout << "Passed scanNext EOF leak test." << endl;
-    
+    */
 
-    /*
+    
     cout << endl << "Testing InsertFileScan Page-Switch leak..." << endl;
     status = createHeapFile("leak.03");
 
@@ -838,7 +838,7 @@ int main(int argc, char **argv)
     }
     destroyHeapFile("leak.03");
     cout << "Passed Insert Page-Switch leak test." << endl;
-    */
+    
 
 
 
