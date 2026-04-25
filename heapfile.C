@@ -500,18 +500,18 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
     if (status == NOSPACE)
     {
         // DEBUG
-        cout << "[TRACE] Page " << curPageNo << " is full. Header says LastPage is: " << headerPage->lastPage << endl;
+        // cout << "[TRACE] Page " << curPageNo << " is full. Header says LastPage is: " << headerPage->lastPage << endl;
 
         // Make a new page
         status = bufMgr->allocPage(filePtr, newPageNo, newPage);
         if (status != OK) {
             // DEBUG
-            cout << "[ERROR] allocPage failed with status: " << status << endl;
+            // cout << "[ERROR] allocPage failed with status: " << status << endl;
             return status;
         }
 
         // DEBUG
-        cout << "[TRACE] Allocated New Page: " << newPageNo << endl;
+        // cout << "[TRACE] Allocated New Page: " << newPageNo << endl;
 
         // Initialize the new page as a HeapPage
         newPage->init(newPageNo);
@@ -523,7 +523,7 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         curDirtyFlag = true; 
         status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
         // DEBUG
-        if (status != OK) cout << "[ERROR] Could not unpin OLD page " << curPageNo << endl;
+        // if (status != OK) cout << "[ERROR] Could not unpin OLD page " << curPageNo << endl;
         if (status != OK) return status;
 
         // Update Bookkeeping to point to the new page
@@ -537,7 +537,7 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         // Insert the record into the brand new page
         status = curPage->insertRecord(rec, outRid);
         // DEBUG
-        cout << "[TRACE] Salvage insert on Page " << curPageNo << " result: " << status << endl;
+        // cout << "[TRACE] Salvage insert on Page " << curPageNo << " result: " << status << endl;
     }
 
     if (status == OK)
@@ -547,11 +547,13 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         curDirtyFlag = true;
         curRec = outRid;
     }
+    /*
     else 
     {
         // DEBUG
-        cout << "[CRITICAL] Record NOT counted. Status: " << status << " at Page: " << curPageNo << endl;
+        // cout << "[CRITICAL] Record NOT counted. Status: " << status << " at Page: " << curPageNo << endl;
     }
+    */
 
     return status;
 }
