@@ -765,6 +765,87 @@ int main(int argc, char **argv)
         error.print(status);
     }
     // ===============================================================
+
+
+    // Add this before "Done testing."
+    cout << endl << "Testing getRecord pin leak..." << endl;
+    status = createHeapFile("leak.01");
+    iScan = new InsertFileScan("leak.01", status);
+
+    // 1. Insert enough records to span 150+ pages 
+    // (Ensure we exceed the 101 buffer pool frames)
+    for(i = 0; i < 2000; i++) {
+        rec1.i = i;
+        dbrec1.data = &rec1;
+        dbrec1.length = sizeof(RECORD);
+        iScan->insertRecord(dbrec1, ridArray[i]);
+    }
+    delete iScan;
+
+    file1 = new HeapFile("leak.01", status);
+    // 2. Try to get records from many different pages.
+    // If getRecord leaks the pin of the previous page, 
+    // this loop will crash the Buffer Manager around i=101.
+    for(i = 0; i < 2000; i += 20) {
+        status = file1->getRecord(ridArray[i], dbrec2);
+        if (status != OK) {
+            cout << "FAILED getRecord leak test at record " << i << endl;
+            error.print(status);
+            break;
+        }
+    }
+    delete file1;
+    destroyHeapFile("leak.01");
+    cout << "Passed getRecord leak test." << endl;
+
+
+
+
+    cout << endl << "Testing scanNext EOF pin leak..." << endl;
+    status = createHeapFile("leak.02");
+    iScan = new InsertFileScan("leak.02", status);
+    // Just 2 pages worth
+    for(i = 0; i < 50; i++) {
+        iScan->insertRecord(dbrec1, newRid);
+    }
+    delete iScan;
+
+    // Repeatedly scan to the end of the file. 
+    // If scanNext doesn't unpin the last page on FILEEOF, we will leak 1 pin per loop.
+    for(i = 0; i < 150; i++) {
+        scan1 = new HeapFileScan("leak.02", status);
+        scan1->startScan(0, 0, STRING, NULL, EQ);
+        while(scan1->scanNext(newRid) != FILEEOF) { /* just consume */ }
+        delete scan1; // Destructor should clean up.
+    }
+    destroyHeapFile("leak.02");
+    cout << "Passed scanNext EOF leak test." << endl;
+
+
+
+
+    cout << endl << "Testing InsertFileScan Page-Switch leak..." << endl;
+    status = createHeapFile("leak.03");
+
+    // We will open and close the insert scan repeatedly while the file is large.
+    // If the allocation logic in insertRecord leaves the previous page pinned 
+    // during the NOSPACE transition, we will leak pins.
+    for(i = 0; i < 200; i++) {
+        iScan = new InsertFileScan("leak.03", status);
+        for(int k = 0; k < 5; k++) { // Insert a few records
+            iScan->insertRecord(dbrec1, newRid);
+        }
+        delete iScan; // If this doesn't unpin correctly, we lose a frame.
+    }
+    destroyHeapFile("leak.03");
+    cout << "Passed Insert Page-Switch leak test." << endl;
+
+
+
+
+
+    
+
     delete bufMgr;
 
     cout << endl << "Done testing." << endl;
