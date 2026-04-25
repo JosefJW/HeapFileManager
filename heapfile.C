@@ -49,9 +49,9 @@ const Status createHeapFile(const string fileName)
         hdrPage->pageCnt = 1; // Now has one data page
 
         // Unpin opened pages
-        status = bufMgr->unPinPage(file, hdrPageNo, 1);
+        status = bufMgr->unPinPage(file, hdrPageNo, true);
         if (status != OK) return status;
-        status = bufMgr->unPinPage(file, newPageNo, 1);
+        status = bufMgr->unPinPage(file, newPageNo, true);
         if (status != OK) return status;
 
         db.closeFile(file);
