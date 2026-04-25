@@ -336,7 +336,12 @@ const Status HeapFileScan::scanNext(RID& outRid)
             int nextPageNo;
             status = curPage->getNextPage(nextPageNo);
             if (status != OK) return status;
-            if (nextPageNo == -1) return FILEEOF;
+            if (nextPageNo == -1) {
+                status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+                curPage = NULL;
+                curPageNo = -1;
+                return FILEEOF;
+            }
 
             // Unpin the old page
             status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
