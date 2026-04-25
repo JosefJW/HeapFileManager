@@ -499,6 +499,9 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
 
     if (status == NOSPACE)
     {
+        // DEBUG
+        cout << "[DEBUG] Page " << curPageNo << " full. Allocating " << newPageNo << endl;
+
         // Make a new page
         status = bufMgr->allocPage(filePtr, newPageNo, newPage);
         if (status != OK) return status;
