@@ -766,7 +766,7 @@ int main(int argc, char **argv)
     }
     // ===============================================================
 
-    
+    /*
     // Add this before "Done testing."
     cout << endl << "Testing getRecord pin leak..." << endl;
     status = createHeapFile("leak.01");
@@ -797,10 +797,10 @@ int main(int argc, char **argv)
     delete file1;
     destroyHeapFile("leak.01");
     cout << "Passed getRecord leak test." << endl;
+    */
 
 
-
-    /*
+    
     cout << endl << "Testing scanNext EOF pin leak..." << endl;
     status = createHeapFile("leak.02");
     iScan = new InsertFileScan("leak.02", status);
@@ -815,14 +815,14 @@ int main(int argc, char **argv)
     for(i = 0; i < 150; i++) {
         scan1 = new HeapFileScan("leak.02", status);
         scan1->startScan(0, 0, STRING, NULL, EQ);
-        while(scan1->scanNext(newRid) != FILEEOF) { /* just consume *\/ }
+        while(scan1->scanNext(newRid) != FILEEOF) { /* just consume */ }
         delete scan1; // Destructor should clean up.
     }
     destroyHeapFile("leak.02");
     cout << "Passed scanNext EOF leak test." << endl;
+    
 
-
-
+    /*
     cout << endl << "Testing InsertFileScan Page-Switch leak..." << endl;
     status = createHeapFile("leak.03");
 
