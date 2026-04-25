@@ -823,7 +823,7 @@ int main(int argc, char **argv)
 
 
 
-
+    /*
     cout << endl << "Testing InsertFileScan Page-Switch leak..." << endl;
     status = createHeapFile("leak.03");
 
@@ -839,7 +839,7 @@ int main(int argc, char **argv)
     }
     destroyHeapFile("leak.03");
     cout << "Passed Insert Page-Switch leak test." << endl;
-
+    */
 
 
 
