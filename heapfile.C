@@ -453,17 +453,14 @@ InsertFileScan::InsertFileScan(const string & name,
 InsertFileScan::~InsertFileScan()
 {
     Status status;
-    // unpin last data page
+    // unpin last page of the scan
     if (curPage != NULL)
     {
-        status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+        status = bufMgr->unPinPage(filePtr, curPageNo, true);
         curPage = NULL;
         curPageNo = 0;
         if (status != OK) cerr << "error in unpin of data page\n";
     }
-
-    status = bufMgr->unPinPage(filePtr, headerPageNo, hdrDirtyFlag);
-    if (status != OK) cerr << "error in unpin of header page\n";
 }
 
 /**
@@ -503,14 +500,18 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
     if (status == NOSPACE)
     {
         // DEBUG
-        cout << "[DEBUG] Page " << curPageNo << " full. Allocating " << newPageNo << endl;
+        cout << "[TRACE] Page " << curPageNo << " is full. Header says LastPage is: " << headerPage->lastPage << endl;
 
         // Make a new page
         status = bufMgr->allocPage(filePtr, newPageNo, newPage);
-        if (status != OK) return status;
+        if (status != OK) {
+            // DEBUG
+            cout << "[ERROR] allocPage failed with status: " << status << endl;
+            return status;
+        }
 
         // DEBUG
-        cout << "[DEBUG 2] Page " << curPageNo << " full. Allocating " << newPageNo << endl;
+        cout << "[TRACE] Allocated New Page: " << newPageNo << endl;
 
         // Initialize the new page as a HeapPage
         newPage->init(newPageNo);
@@ -521,6 +522,8 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         // Mark the old page as dirty
         curDirtyFlag = true; 
         status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+        // DEBUG
+        if (status != OK) cout << "[ERROR] Could not unpin OLD page " << curPageNo << endl;
         if (status != OK) return status;
 
         // Update Bookkeeping to point to the new page
@@ -533,6 +536,8 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
 
         // Insert the record into the brand new page
         status = curPage->insertRecord(rec, outRid);
+        // DEBUG
+        cout << "[TRACE] Salvage insert on Page " << curPageNo << " result: " << status << endl;
     }
 
     if (status == OK)
@@ -541,6 +546,11 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         hdrDirtyFlag = true;
         curDirtyFlag = true;
         curRec = outRid;
+    }
+    else 
+    {
+        // DEBUG
+        cout << "[CRITICAL] Record NOT counted. Status: " << status << " at Page: " << curPageNo << endl;
     }
 
     return status;
