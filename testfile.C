@@ -687,13 +687,30 @@ int main(int argc, char **argv)
 
 
     // ===============================================================
-    // FullWorkflow_LargeN
+    // FullWorkflow_LargeN (DIAGNOSTIC VERSION)
     // ===============================================================
     cout << endl << "Running Professor's LargeN Workflow on dummy.gift..." << endl;
     const int GIFT_N = 2000; 
-    status = destroyHeapFile("dummy.gift"); // Clear old
+    status = destroyHeapFile("dummy.gift");
     status = createHeapFile("dummy.gift");
-    if (status != OK) { cout << "Gift Create failed"; error.print(status); }
+
+    // Helper Lambda/Function to check counts without destroying the workflow
+    auto printDiagnostic = [&](const string& label) {
+        Status diagStatus;
+        HeapFile diagFile("dummy.gift", diagStatus);
+        int scanCount = 0;
+        RID diagRid;
+        HeapFileScan diagScan("dummy.gift", diagStatus);
+        diagScan.startScan(0, 0, STRING, NULL, EQ);
+        while (diagScan.scanNext(diagRid) != FILEEOF) scanCount++;
+        diagScan.endScan();
+        
+        cout << "   [DIAGNOSTIC - " << label << "]" << endl;
+        // Accessing protected members via the 'diagFile' object
+        cout << "      Header->recCnt: " << diagFile.getRecCnt() << endl; 
+        cout << "      Actual Scan Count: " << scanCount << endl;
+        cout << "      Header->lastPage: " << diagFile.getLastPageNo() << endl;
+    };
 
     // 1. INSERT N
     {
@@ -705,11 +722,15 @@ int main(int argc, char **argv)
                 dbrec1.data = &rec1;
                 dbrec1.length = sizeof(RECORD);
                 status = ins.insertRecord(dbrec1, newRid);
-                if (status != OK) break;
+                if (status != OK) {
+                    cout << "[CRITICAL] Insert failed at i=" << i << " with status: " << status << endl;
+                    break;
+                }
             }
-            cout << "Step 1: Inserted " << GIFT_N << " records." << endl;
+            cout << "Step 1: Finished Phase 1 Inserts." << endl;
         }
-    } // 'ins' is destroyed here, unpinning its last page
+    } 
+    printDiagnostic("After Step 1");
 
     // 2. DELETE ODDS
     {
@@ -726,9 +747,10 @@ int main(int argc, char **argv)
                 count++;
             }
             scan.endScan();
-            cout << "Step 2: Deleted " << delCount << " odd records." << endl;
+            cout << "Step 2: Deleted " << delCount << " records." << endl;
         }
     }
+    printDiagnostic("After Step 2");
 
     // 3. INSERT ANOTHER N
     {
@@ -740,10 +762,18 @@ int main(int argc, char **argv)
                 dbrec1.data = &rec1;
                 dbrec1.length = sizeof(RECORD);
                 status = ins.insertRecord(dbrec1, newRid);
+                if (status != OK) {
+                    cout << "[CRITICAL] Phase 2 Insert failed at i=" << i << " status: " << status << endl;
+                    break;
+                }
             }
-            cout << "Step 3: Inserted another " << GIFT_N << " records." << endl;
+            cout << "Step 3: Finished Phase 2 Inserts." << endl;
         }
     }
+    printDiagnostic("After Step 3");
+
+    // 4. FINAL COUNT
+    // ... rest of your code ...
 
     // 4. FINAL COUNT (Should be GIFT_N/2 + GIFT_N)
     {
@@ -844,7 +874,7 @@ int main(int argc, char **argv)
 
 
 
-    
+
 
     delete bufMgr;
 

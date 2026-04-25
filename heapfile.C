@@ -330,7 +330,7 @@ const Status HeapFileScan::scanNext(RID& outRid)
                 return OK;
             }
         }
-        // No more record, end of current page
+        // No more records, end of current page
         else {
             // Get the next page if there is one
             int nextPageNo;
