@@ -452,6 +452,7 @@ InsertFileScan::InsertFileScan(const string & name,
 
 InsertFileScan::~InsertFileScan()
 {
+    /*
     Status status;
     // unpin last page of the scan
     if (curPage != NULL)
@@ -461,6 +462,7 @@ InsertFileScan::~InsertFileScan()
         curPageNo = 0;
         if (status != OK) cerr << "error in unpin of data page\n";
     }
+    */
 }
 
 /**
