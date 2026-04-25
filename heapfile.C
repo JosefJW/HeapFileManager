@@ -180,7 +180,11 @@ const Status HeapFile::getRecord(const RID & rid, Record & rec)
 
         // Read in the correct page
         status = bufMgr->readPage(filePtr, rid.pageNo, curPage);
-        if (status != OK) return status;
+        if (status != OK) {
+            curPage = NULL;
+            curPageNo = -1;
+            return status;
+        }
         curPageNo = rid.pageNo;
         curDirtyFlag = false;
     }
