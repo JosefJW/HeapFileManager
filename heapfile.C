@@ -453,14 +453,17 @@ InsertFileScan::InsertFileScan(const string & name,
 InsertFileScan::~InsertFileScan()
 {
     Status status;
-    // unpin last page of the scan
+    // unpin last data page
     if (curPage != NULL)
     {
-        status = bufMgr->unPinPage(filePtr, curPageNo, true);
+        status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
         curPage = NULL;
         curPageNo = 0;
         if (status != OK) cerr << "error in unpin of data page\n";
     }
+
+    status = bufMgr->unPinPage(filePtr, headerPageNo, hdrDirtyFlag);
+    if (status != OK) cerr << "error in unpin of header page\n";
 }
 
 /**
