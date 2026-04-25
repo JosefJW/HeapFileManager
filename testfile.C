@@ -766,7 +766,7 @@ int main(int argc, char **argv)
     }
     // ===============================================================
 
-    /*
+    
     // Add this before "Done testing."
     cout << endl << "Testing getRecord pin leak..." << endl;
     status = createHeapFile("leak.01");
@@ -800,7 +800,7 @@ int main(int argc, char **argv)
 
 
 
-
+    /*
     cout << endl << "Testing scanNext EOF pin leak..." << endl;
     status = createHeapFile("leak.02");
     iScan = new InsertFileScan("leak.02", status);
