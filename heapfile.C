@@ -14,7 +14,6 @@ const Status createHeapFile(const string fileName)
 {
     File* 		file;
     Status 		status;
-    Page* newHdrPage;
     FileHdrPage*	hdrPage;
     int			hdrPageNo;
     int			newPageNo;
@@ -31,10 +30,9 @@ const Status createHeapFile(const string fileName)
         if (status != OK) return status;
 
         // Initialize the header page
-		status = bufMgr->allocPage(file, hdrPageNo, newHdrPage);
+		status = bufMgr->allocPage(file, hdrPageNo, newPage);
         if (status != OK) return status;
-        newHdrPage->init(hdrPageNo);
-        hdrPage = (FileHdrPage*) newHdrPage;
+        hdrPage = (FileHdrPage*) newPage;
         memset(hdrPage->fileName, 0, MAXNAMESIZE); // Ensure hdrPage->fileName is blank
         strncpy(hdrPage->fileName, fileName.c_str(), MAXNAMESIZE-1); // Fill in fileName
         hdrPage->pageCnt = 0;
@@ -51,9 +49,9 @@ const Status createHeapFile(const string fileName)
         hdrPage->pageCnt = 1; // Now has one data page
 
         // Unpin opened pages
-        status = bufMgr->unPinPage(file, hdrPageNo, true);
+        status = bufMgr->unPinPage(file, hdrPageNo, 1);
         if (status != OK) return status;
-        status = bufMgr->unPinPage(file, newPageNo, true);
+        status = bufMgr->unPinPage(file, newPageNo, 1);
         if (status != OK) return status;
 
         db.closeFile(file);
@@ -338,12 +336,7 @@ const Status HeapFileScan::scanNext(RID& outRid)
             int nextPageNo;
             status = curPage->getNextPage(nextPageNo);
             if (status != OK) return status;
-            if (nextPageNo == -1) {
-                status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
-                curPage = NULL;
-                curPageNo = -1;
-                return FILEEOF;
-            }
+            if (nextPageNo == -1) return FILEEOF;
 
             // Unpin the old page
             status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
