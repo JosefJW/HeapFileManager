@@ -486,9 +486,11 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
     }
 
 
-    if (curPage == NULL)
+    if (curPage == NULL || curPageNo != headerPage->lastPage)
     {
-        // If nothing is pinned, jump to the end of the file
+        if (curPage != NULL) {
+            bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+        }
         curPageNo = headerPage->lastPage;
         status = bufMgr->readPage(filePtr, curPageNo, curPage);
         if (status != OK) return status;
