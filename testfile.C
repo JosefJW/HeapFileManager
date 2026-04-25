@@ -684,6 +684,87 @@ int main(int argc, char **argv)
         cout << endl << "got err0r status return from destroy file" << endl;
         error.print(status);
     }
+
+
+    // ===============================================================
+    // FullWorkflow_LargeN
+    // ===============================================================
+    cout << endl << "Running Professor's LargeN Workflow on dummy.gift..." << endl;
+    const int GIFT_N = 2000; 
+    status = destroyHeapFile("dummy.gift"); // Clear old
+    status = createHeapFile("dummy.gift");
+    if (status != OK) { cout << "Gift Create failed"; error.print(status); }
+
+    // 1. INSERT N
+    {
+        InsertFileScan ins("dummy.gift", status);
+        if (status == OK) {
+            for(i = 0; i < GIFT_N; i++) {
+                sprintf(rec1.s, "Gift Record %05d", i);
+                rec1.i = i; rec1.f = i;
+                dbrec1.data = &rec1;
+                dbrec1.length = sizeof(RECORD);
+                status = ins.insertRecord(dbrec1, newRid);
+                if (status != OK) break;
+            }
+            cout << "Step 1: Inserted " << GIFT_N << " records." << endl;
+        }
+    } // 'ins' is destroyed here, unpinning its last page
+
+    // 2. DELETE ODDS
+    {
+        HeapFileScan scan("dummy.gift", status);
+        if (status == OK) {
+            scan.startScan(0, 0, STRING, NULL, EQ);
+            int count = 0;
+            int delCount = 0;
+            while (scan.scanNext(rec2Rid) != FILEEOF) {
+                if (count % 2 != 0) {
+                    status = scan.deleteRecord();
+                    if (status == OK) delCount++;
+                }
+                count++;
+            }
+            scan.endScan();
+            cout << "Step 2: Deleted " << delCount << " odd records." << endl;
+        }
+    }
+
+    // 3. INSERT ANOTHER N
+    {
+        InsertFileScan ins("dummy.gift", status);
+        if (status == OK) {
+            for(i = 0; i < GIFT_N; i++) {
+                sprintf(rec1.s, "Gift Phase 2 %05d", i);
+                rec1.i = i; rec1.f = i;
+                dbrec1.data = &rec1;
+                dbrec1.length = sizeof(RECORD);
+                status = ins.insertRecord(dbrec1, newRid);
+            }
+            cout << "Step 3: Inserted another " << GIFT_N << " records." << endl;
+        }
+    }
+
+    // 4. FINAL COUNT (Should be GIFT_N/2 + GIFT_N)
+    {
+        HeapFileScan scan("dummy.gift", status);
+        if (status == OK) {
+            scan.startScan(0, 0, STRING, NULL, EQ);
+            int finalCount = 0;
+            while (scan.scanNext(rec2Rid) != FILEEOF) finalCount++;
+            scan.endScan();
+            cout << "Step 4: Final record count: " << finalCount << endl;
+            if (finalCount == (GIFT_N / 2 + GIFT_N)) cout << "GIFT TEST PASSED!" << endl;
+            else cout << "GIFT TEST FAILED! Expected " << (GIFT_N / 2 + GIFT_N) << endl;
+        }
+    }
+
+    status = destroyHeapFile("dummy.gift");
+    if (status != OK) {
+        cout << "GIFT UNLINK FAILED! You have a pin leak." << endl;
+        error.print(status);
+    }
+    // ===============================================================
     delete bufMgr;
 
     cout << endl << "Done testing." << endl;

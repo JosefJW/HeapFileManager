@@ -524,7 +524,6 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
 
         // Insert the record into the brand new page
         status = curPage->insertRecord(rec, outRid);
-        if (status != OK) return status;
     }
 
     if (status == OK)
